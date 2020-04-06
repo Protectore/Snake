@@ -1,0 +1,66 @@
+<BackgroundColor@Widget>
+    background_color: (1, 1, 1, 1)
+    canvas.before:
+        Color:
+            rgba: root.background_color
+        Rectangle:
+            size: self.size
+            pos: self.pos
+
+
+<SnakePanel>:
+    canvas:
+        Color:
+            rgba: (1, 0, 0, 1)
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+
+
+<RootLayout>:
+
+	BoxLayout:
+		orientation: 'vertical'
+		padding: 10
+		size_hint: (.8, 1)
+		
+		Label:
+			id: just_label
+			text: "Here will be messages about something"
+			color: (0, 0, 0, 1)
+			size_hint: (1, .2)
+			font_size: 23
+
+		SnakeScreen:
+			id: Snake_screen
+
+	BoxLayout:
+		orientation: 'vertical'
+		padding: 10
+		size_hint: (.45, 1)
+
+		Label:
+			id: top_5_label
+			text: "Top 5\n\n1.\n\n2.\n\n3.\n\n4.\n\n5."
+			color: (0, 0, 0, 1)
+			font_size: 17
+
+		Label:
+			id: current_score_label
+			text: 'Score = 0'
+			color: (0, 0, 0, 1)
+			size_hint: (1, 0.3)
+			font_size: 17
+
+		BoxLayout:
+			orientation: 'vertical'
+			padding: 20
+			
+			Button:
+				text: "Start"
+				background_color: (.2, 1, .3, 1)
+		
+			Button:
+				text: "Stop"
+				background_color: (1, .2, .3, 1)
