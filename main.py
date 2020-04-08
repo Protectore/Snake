@@ -52,16 +52,20 @@ class Snake:
 
 	def move(self):		# move snake by 1 tick
 		for i in range(len(self.snake)):
-			if self.snake[i][2] == 'right':
-				self.snake[i][1] += 1
-			elif self.snake[i][2] == 'left':
-				self.snake[i][1] -= 1
-			elif self.snake[i][2] == 'up':
-				self.snake[i][0] -= 1
-			elif self.snake[i][2] == 'down':
-				self.snake[i][0] += 1
+			self.snake[i][0], self.snake[i][1] = Snake.get_next_cell(self.snake[i])
 			if i + 1 < len(self.snake):
 				self.snake[i][2] = self.snake[i+1][2]
+
+	@classmethod
+	def get_next_cell(self, cell):
+		if cell[2] == 'right':
+			return cell[0], cell[1]+1
+		elif cell[2] == 'left':
+			return cell[0], cell[1]-1
+		elif cell[2] == 'up':
+			return cell[0]-1, cell[1]
+		elif cell[2] == 'down':
+			return cell[0]+1, cell[1]
 
 
 class SnakeScreen(GridLayout):		# Widget for snake playground
@@ -122,8 +126,10 @@ class SnakeApp(App):
 		if not self.started:
 			self.started = True
 			self.snake_screen.spawn_food()
+			self.snake_screen.redraw()
 			Clock.schedule_interval(self.update, tickrait)
 			print('timer started!')
+			self.msg("Game started!")
 
 	def stop(self):				# Stop timer
 		if self.started:
@@ -133,21 +139,28 @@ class SnakeApp(App):
 			self.snake_screen.snake = Snake()
 
 	def update(self, _):		# Function for timer update
+		x, y = Snake.get_next_cell(self.snake_screen.snake.snake[-1])
+		print(x, y)
+		if ((x < 0) or (x >= width) or (y < 0) or (y >= height)):
+			self.stop()
+			self.msg("Game over :(")
+			return
 		self.snake_screen.snake.move()
-		#self.snake_screen.spawn_food()
-		self.snake_screen.redraw()
 		print(self.snake_screen.snake.map)
 		print(self.snake_screen.snake.snake)
+		self.snake_screen.redraw()
 
-	def control(self, event, keyboard, keycode, text, modifiers):
-		head = self.snake_screen.snake.snake[-1]
-		if ((keycode == 82) and (head[2] != 'down')):
+	def control(self, event, keyboard, keycode, text, modifiers): # Key events
+		snake = self.snake_screen.snake.snake
+		head = snake[-1]
+		pre_head = snake[-2]
+		if ((keycode == 82) and (pre_head[2] != 'down')): #Arrow up to move snake up
 			head[2] = 'up'
-		elif ((keycode == 81) and (head[2] != 'up')):
+		elif ((keycode == 81) and (pre_head[2] != 'up')): #Arrow down to move snake down
 			head[2] = 'down'
-		elif ((keycode == 80) and (head[2] != 'right')):
+		elif ((keycode == 80) and (pre_head[2] != 'right')): #Arrow left to move snake left
 			head[2] = 'left'
-		elif ((keycode == 79) and (head[2] != 'left')):
+		elif ((keycode == 79) and (pre_head[2] != 'left')): #Arrow right to move snake right
 			head[2] = 'right'
 
 
