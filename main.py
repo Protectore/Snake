@@ -6,6 +6,7 @@ from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.widget import Widget
 from kivy.graphics import (Color, Rectangle)
+from kivy.factory import Factory
 from kivy.clock import Clock
 from random import randint
 from copy import deepcopy
@@ -18,8 +19,8 @@ empty_color = (1, 0, 0, 1)
 body_color = (.3, .9, 0, 1)
 head_color = (0, .8, 0, 1)
 food_color = (1, .91, 0, 1)
-tickrait = 1
-tor = True
+start_tickrait = 1
+tor = False
 
 # there are some pattenrs of snake
 #len 10
@@ -29,10 +30,16 @@ extra_snake = [[height-9, 1, 'down'], [height-8, 1, 'down'], [height-7, 1, 'down
 				[height-2, 3, 'right']]
 #len 3
 base_snake = [[height-2, 1, 'right'], [height-2, 2, 'right'], [height-2, 3, 'right']]
+current_snake = base_snake
 
+mul_coef = 0.9
+def mul_speed(score, coef=mul_coef):
+	return start_tickrait/(score*coef)
 
+def sub_speed(score):
+	return start_tickrait - (start_tickrait * score) / (min([height, width])*5)
 
-current_snake = extra_snake
+current_change_speed = mul_speed
 
 
 class RootLayout(BoxLayout):		# Main widget, all wigets stacked on him
@@ -42,7 +49,6 @@ class RootLayout(BoxLayout):		# Main widget, all wigets stacked on him
 
 class SnakePanel(Label):			# Widget for cell of snake screen
 	pass
-
 
 class Snake:
 	def __init__(self, snake=current_snake):
@@ -55,7 +61,7 @@ class Snake:
 	def get_map_status(self):	# update map with values for panels colors
 		for i in range(height):
 			for j in range(width):
-				self.map[i][j] = 0 # Cleaning cuurent status
+				self.map[i][j] = 0 # Cleaning curent status
 
 		for i in range(len(self.snake)-1):
 			self.map[self.snake[i][0]][self.snake[i][1]] = 1 # marking body
@@ -110,12 +116,10 @@ class Snake:
 	def is_game_over(self):
 		y, x = Snake.get_next_cell(self.snake[-1])
 		if not tor:
-			if ((x < 0) or (x >= width) or (y < 0) or (y >= height)):
-				return True
+			return ((x < 0) or (x >= width) or (y < 0) or (y >= height))
 		for i in range(len(self.snake)-1):
 			y1, x1 = Snake.get_next_cell(self.snake[i])
-			if ((x==x1) and (y==y1)):
-				return True
+			return ((x==x1) and (y==y1))
 		return False
 
 	def eat(self):
@@ -166,22 +170,36 @@ class SnakeApp(App):
 	def build(self):
 		root = RootLayout()
 		self.root = root
+		self.tickrait = start_tickrait
 		self.snake_screen = root.snake_screen
 		self.snake = self.snake_screen.snake
+		self.top_5 = [0, 0, 0, 0, 0]
 		self.started = False	# Variable that show started timer or not
-		Window.bind(on_key_down=self.control)
+		Window.bind(on_key_down=self.controls)
 
 		return root
 
 	def msg(self, text):		# Update text on message label
 		self.root.message_label.text = text
 
+	def get_top_5(self):
+		top_5 = self.top_5
+		return f"Top 5 score\n\n1. {top_5[0]}\n\n2. {top_5[1]}\n\n3. {top_5[2]}\n\n4. {top_5[3]}\n\n5. {top_5[4]}"
+
+	def game_over(self):
+		score = self.stop()
+		if self.top_5[4] < score:
+			self.top_5[4] = score
+			self.top_5.sort(reverse=True)
+			self.root.top_5_label.text = self.get_top_5()
+		self.msg("Game over :(")
+
 	def start(self):			# Start timer
 		if not self.started:
 			self.started = True
 			self.snake_screen.redraw()
 			self.root.score_label.text = f"Score = {self.snake.score}"
-			Clock.schedule_interval(self.update, tickrait)
+			Clock.schedule_interval(self.update, self.tickrait)
 			print('timer started!')
 			self.msg("Game started!")
 
@@ -190,24 +208,34 @@ class SnakeApp(App):
 			Clock.unschedule(self.update)
 			print('timer stoped')
 			self.started = False
+			score = self.snake.score
 			self.snake_screen.snake = Snake()
 			self.snake = self.snake_screen.snake
+			return score
+
+	def change_speed(self):
+		Clock.unschedule(self.update)
+		Clock.schedule_interval(self.update, current_change_speed(self.snake.score))
 
 	def update(self, _):		# Function for timer update
 		if self.snake.is_game_over():
-			self.stop()
-			self.msg("Game over :(")
+			self.game_over()
 			return
 		food_eated = self.snake.eat()
 		if food_eated:
 			self.root.score_label.text = f"Score = {self.snake.score}"
+			self.msg("+1!")
+			self.change_speed()
 		else:
 			self.snake.move()
+			msg_text = self.snake.snake[-1][2]
+			msg_text = msg_text[0].upper() + msg_text[1:]
+			self.msg(msg_text)
 		print(self.snake.map)
 		print(self.snake.snake)
 		self.snake_screen.redraw()
 
-	def control(self, event, keyboard, keycode, text, modifiers): # Key events
+	def controls(self, event, keyboard, keycode, text, modifiers): # Key events
 		snake = self.snake.snake
 		head = snake[-1]
 		pre_head = snake[-2]
@@ -224,7 +252,6 @@ class SnakeApp(App):
 if __name__ == '__main__':
 	Window.clearcolor = background_color
 	SnakeApp().run()
-
 
 
 
