@@ -5,11 +5,14 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.uix.widget import Widget
+from kivy.uix.textinput import TextInput
+from kivy.uix.popup import Popup
 from kivy.graphics import (Color, Rectangle)
 from kivy.factory import Factory
 from kivy.clock import Clock
 from random import randint
 from copy import deepcopy
+import json
 
 background_color = (.95, 1, .59, 1)
 width = 15
@@ -21,6 +24,9 @@ head_color = (0, .8, 0, 1)
 food_color = (1, .91, 0, 1)
 start_tickrait = 1
 tor = False
+ai = False
+audio = True
+nick = "Player"
 
 # there are some pattenrs of snake
 #len 10
@@ -39,7 +45,7 @@ def mul_speed(score, coef=mul_coef):
 def sub_speed(score):
 	return start_tickrait - (start_tickrait * score) / (min([height, width])*5)
 
-current_change_speed = mul_speed
+current_change_speed = sub_speed
 
 
 class RootLayout(BoxLayout):		# Main widget, all wigets stacked on him
@@ -49,6 +55,24 @@ class RootLayout(BoxLayout):		# Main widget, all wigets stacked on him
 
 class SnakePanel(Label):			# Widget for cell of snake screen
 	pass
+
+
+class MySettings(Popup):			# Settings
+	def set_settings(self):
+		global empty_color, tor, nick, music, ai, food_color, body_color, head_color, audio
+		# colors
+		empty_color = self.field_color.text.split(', ')
+		body_color = self.body_color.text.split(', ')
+		head_color = self.head_color.text.split(', ')
+		food_color = self.food_color.text.split(', ')
+		# misc
+		tor = self.tor_enabled.active
+		ai = self.ai_enabled.active
+		nick = self.player_nickname.text
+		audio = self.audio_enabled.active
+
+		self.dismiss()
+
 
 class Snake:
 	def __init__(self, snake=current_snake):
@@ -119,7 +143,8 @@ class Snake:
 			return ((x < 0) or (x >= width) or (y < 0) or (y >= height))
 		for i in range(len(self.snake)-1):
 			y1, x1 = Snake.get_next_cell(self.snake[i])
-			return ((x==x1) and (y==y1))
+			if ((x==x1) and (y==y1)):
+				return True
 		return False
 
 	def eat(self):
@@ -176,6 +201,9 @@ class SnakeApp(App):
 		self.top_5 = [0, 0, 0, 0, 0]
 		self.started = False	# Variable that show started timer or not
 		Window.bind(on_key_down=self.controls)
+		with open("scores.json", "r") as file:
+			self.data = json.load(file)
+		self.root.top_5_label.text = self.get_top_5() 
 
 		return root
 
@@ -183,21 +211,32 @@ class SnakeApp(App):
 		self.root.message_label.text = text
 
 	def get_top_5(self):
-		top_5 = self.top_5
-		return f"Top 5 score\n\n1. {top_5[0]}\n\n2. {top_5[1]}\n\n3. {top_5[2]}\n\n4. {top_5[3]}\n\n5. {top_5[4]}"
+		scores = self.data["top_5_scores"]
+		names = self.data["top_5_names"]
+		result = f'''Top 5 scores\n\n1. {names[0]} - {scores[0]}\n\n2. {names[1]} - {scores[1]}\n\n3. {names[2]} - {scores[2]}\n\n4. {names[3]} - {scores[3]}\n\n5. {names[4]} - {scores[4]}'''
+		return result
 
 	def game_over(self):
 		score = self.stop()
-		if self.top_5[4] < score:
-			self.top_5[4] = score
-			self.top_5.sort(reverse=True)
+		scores = self.data["top_5_scores"]
+		names = self.data["top_5_names"]
+		if scores[4] < score:
+			scores[4] = score
+			names[4] = nick
+			for i in range(4):
+				i = 4-i
+				if scores[i] > scores[i-1]:
+					scores[i], scores[i-1] = scores[i-1], scores[i]
+					names[i], names[i-1] = names[i-1], names[i]
+					print('swaped', i)
 			self.root.top_5_label.text = self.get_top_5()
+			with open("scores.json", "w") as file:
+				json.dump(self.data, file)
 		self.msg("Game over :(")
 
 	def start(self):			# Start timer
 		if not self.started:
 			self.started = True
-			self.snake_screen.redraw()
 			self.root.score_label.text = f"Score = {self.snake.score}"
 			Clock.schedule_interval(self.update, self.tickrait)
 			print('timer started!')
@@ -252,7 +291,3 @@ class SnakeApp(App):
 if __name__ == '__main__':
 	Window.clearcolor = background_color
 	SnakeApp().run()
-
-
-
-

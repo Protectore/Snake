@@ -23,6 +23,7 @@
 
 <Help@Popup>:
 
+	background: './source/Help_back.jpg'
 	title: 'Help'
 	separator_height: 2
 
@@ -30,12 +31,157 @@
 		orientation: 'vertical'
 		
 		Label:
+			font_size: 20
 			text: 'This is snake game by Protectore. Controls is arrow keys. Enjoy!'
 
-		Button:
-			size_hint: (1, .2)
-			text: 'OK'
-			on_release: root.dismiss()
+		BoxLayout:
+
+			Widget:
+			Button:
+				background_color: (.2, 1, .3, 1)
+				size_hint: (1, .2)
+				text: 'OK'
+				on_release: root.dismiss()
+			Widget:
+
+
+<MySettings@Popup>:
+	
+	title: 'Settings'
+	background: './source/Help_back.jpg'
+
+	field_color: field_color
+	head_color: head_color
+	body_color: body_color
+	food_color: food_color
+	tor_enabled: tor_enabled
+	audio_enabled: audio_enabled
+	ai_enabled: ai_enabled
+	player_nickname: player_nickname
+
+	BoxLayout:
+		padding: (1, .8)
+		orientation: 'vertical'
+
+		Label:
+			text: 'Main section'
+			font_size: 30
+			size_hint: (.3, 1)
+
+		GridLayout:
+			rows: 3
+			cols: 4
+
+			Label:
+				text: 'Tor'
+			Switch:
+				id: tor_enabled
+
+			Label:
+				text: 'Width'
+			Label:
+				text: 'Sorry, unchangable. 15'
+
+			Label:
+				text: 'Sound'
+			Switch:
+				id: audio_enabled
+
+			Label:
+				text: 'Height'
+			Label:
+				text: 'Sorry, unchangable. 15'
+
+			Label:
+				text: 'AI'
+			Switch:
+				id: ai_enabled
+
+			Label:
+				text: 'Nickname'
+			TextInput:
+				text: 'Player'
+				id: player_nickname
+
+		Label:
+			size_hint: (.4, 1)
+			font_size: 30
+			text: 'Color section (RGBA)'
+
+		BoxLayout:
+			orientation: 'vertical'
+
+			BoxLayout:
+				spacing: 30
+
+				Label:
+					size_hint: (.7, 1)
+					text: 'Game field color'
+				TextInput:
+					text: '1, 0, 0, 1'
+					id: field_color
+				Button:
+					text: 'Click me!'
+					background_normal: ''
+					background_color: (1, 0, 0, 1)
+					on_press: self.background_color = field_color.text.split(', ')
+
+			BoxLayout:
+				spacing: 30
+				Label:
+					size_hint: (.7, 1)
+					text: 'Snake\'s head color'
+				TextInput:
+					text: '0, .8, 0, 1'
+					id: head_color
+				Button:
+					text: 'And me!'
+					background_normal: ''
+					background_color: (0, .8, 0, 1)
+					on_press: self.background_color = head_color.text.split(', ')
+
+			BoxLayout:
+				spacing: 30
+				Label:
+					size_hint: (.7, 1)
+					text: 'Snake color'
+				TextInput:
+					text: '.3, .9, 0, 1'
+					id: body_color
+				Button:
+					text: 'Or... maybe me...'
+					background_normal: ''
+					background_color: (.3, .9, 0, 1)
+					on_press: self.background_color = body_color.text.split(', ')
+
+			BoxLayout:
+				spacing: 30
+				Label:
+					size_hint: (.7, 1)
+					text: 'Food color'
+				TextInput:
+					text: '1, .91, 0, 1'
+					id: food_color
+				Button:
+					text: 'Don\'t even dare!!!'
+					background_normal: ''
+					background_color: (1, .91, 0, 1)
+					on_press: self.background_color = food_color.text.split(', ')
+
+		BoxLayout:
+			padding: 20
+			Button:
+				background_color: (.2, 1, .3, 1)
+				size_hint: (1, .5)
+				on_release: root.set_settings()
+				text: 'OK'
+			Button:
+				background_color: (1, .2, .3, 1)
+				size_hint: (1, .5)
+				on_release: root.dismiss()
+				text: 'Cancel'
+
+
 
 
 <RootLayout>:
@@ -84,13 +230,20 @@
 
 			BoxLayout:
 				size_hint: (1, .5)
+				padding: 1
+				spacing: 1
 
 				Button:
+					background_normal : ''
+					background_color: (1, .8, 0, 1)
 					text: 'Help'
 					on_release: Factory.Help().open()
 
 				Button:
+					background_normal : ''
+					background_color: (1, .8, 0, 1)
 					text: 'Settings'
+					on_release: Factory.MySettings().open()
 
 			BoxLayout:
 				orientation: 'vertical'
