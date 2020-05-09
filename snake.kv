@@ -45,7 +45,7 @@
 			Widget:
 
 
-<MySettings@Popup>:
+<MySettings>:
 	
 	title: 'Settings'
 	background: './source/Help_back.jpg'
@@ -75,6 +75,7 @@
 			Label:
 				text: 'Tor'
 			Switch:
+				active: True if ai_enabled.active else False
 				id: tor_enabled
 
 			Label:
@@ -85,6 +86,7 @@
 			Label:
 				text: 'Sound'
 			Switch:
+				active: True
 				id: audio_enabled
 
 			Label:
@@ -97,10 +99,11 @@
 			Switch:
 				id: ai_enabled
 
+
 			Label:
 				text: 'Nickname'
 			TextInput:
-				text: 'Player'
+				text: 'AI' if ai_enabled.active else 'Player'
 				id: player_nickname
 
 		Label:
