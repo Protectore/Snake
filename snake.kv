@@ -29,17 +29,35 @@
 
 	BoxLayout:
 		orientation: 'vertical'
-		
-		Label:
-			font_size: 20
-			text: 'This is snake game by Protectore. Controls is arrow keys. Enjoy!'
+		spacing: 32
+		padding: 5
 
 		BoxLayout:
+			size_hint: (1, .45)
+
+			Widget:
+				size_hint: (.1, None)
+			SnakePanel:
+				size_hint: (1, .3)
+				background_color: (0, .8, 0, 1)
+				font_size: 20
+				text: 'This is snake game by Protectore. Controls is arrow keys. Enjoy!'
+			Widget:
+				size_hint: (.1, None)
+
+		SnakePanel:
+			background_color: (1, .91, 0, 1)
+			font_size: 18
+			color: (.2, .2, .2, 1)
+			text: 'There are also AI mode, you can toggle it in settings and snake will play in itself.\nAlso you can teach her how to play better. There are some controls:\n\n V - turn on/off displaying of what snake can see\n L - turn on/off learning mode.\n ] - Save model (it will be used on next lauches)\n Num +/- to speed up/down game when AI is playing\n\n In learning mode Snake will notify you where it want to go\n and you decide where to go by pressing arrow key. If youre choice didn\'t coincide with\n Snake\'s one, snake\'s model will be changed'
+
+		BoxLayout:
+			size_hint: (1, .5)
 
 			Widget:
 			Button:
 				background_color: (.2, 1, .3, 1)
-				size_hint: (1, .2)
+				size_hint: (1, .3)
 				text: 'OK'
 				on_release: root.dismiss()
 			Widget:

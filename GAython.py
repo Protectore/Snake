@@ -1,5 +1,6 @@
 import json
 import random
+import os
 
 vision = 5
 width = 1 + 2 * vision
@@ -14,11 +15,22 @@ defenition = {
 
 def load_weights():
 	food_weights, wall_weights = None, None
-	with open("data/food_weights.json", "r") as file:
-		food_weights = json.load(file)
-	with open("data/wall_weights.json", "r") as file:
-		wall_weights = json.load(file)
+	if "food_weights.json" in os.listdir("./data"):
+		with open("data/food_weights.json", "r") as file:
+			food_weights = json.load(file)
+	else: 
+		food_weights = [[[0 for k in range(4)] for j in range(width)] for i  in range(height)]
 
+	if "wall_weights.json" in os.listdir("./data"):
+		with open("data/wall_weights.json", "r") as file:
+			wall_weights = json.load(file)
+	else:
+		wall_weights = [[[0 for k in range(4)] for j in range(width)] for i  in range(height)]
+		wall_weights[vision-1][vision][0] = -100
+		wall_weights[vision][vision-1][2] = -100
+		wall_weights[vision][vision+1][3] = -100
+		wall_weights[vision+1][vision][1] = -100
+	
 	print("Weights loaded!")
 	return food_weights, wall_weights
 

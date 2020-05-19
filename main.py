@@ -15,6 +15,7 @@ from random import randint
 from copy import deepcopy
 import json
 import GAython
+import os
 
 background_color = (.95, 1, .59, 1)
 width = 15
@@ -37,7 +38,7 @@ head_color = (0, .8, 0, 1)
 food_color = (1, .91, 0, 1)
 vision_color = (.8, 0, 0, 1)
 start_tickrait = 1
-tor = True
+tor = False
 ai = False
 audio = True
 nick = "Player"
@@ -285,8 +286,11 @@ class SnakeApp(App):
 		self.top_5 = [0, 0, 0, 0, 0]
 		self.started = False	# Variable that show started timer or not
 		Window.bind(on_key_down=self.controls)
-		with open("data/scores.json", "r") as file:
-			self.data = json.load(file)
+		if "scores.json" in os.listdir("./data"):
+			with open("data/scores.json", "r") as file:
+				self.data = json.load(file)
+		else:
+			self.data = json.loads('{"top_5_scores": [5, 3, 2, 1, 0], "top_5_names": ["Python", "Snake", "Boa", "Boa", "Viper"]}')
 		self.root.top_5_label.text = self.get_top_5() 
 
 		return root
@@ -349,6 +353,7 @@ class SnakeApp(App):
 		Clock.schedule_interval(self.update, current_change_speed(self.snake.score))
 
 	def update(self, _):		# Function for timer update
+		print(self.snake.get_map_status())
 		if ai:
 			status = self.snake.get_map_status()
 			visible_area = self.snake.get_visible_area()
@@ -405,7 +410,10 @@ class SnakeApp(App):
 		elif keycode == 15:	# l for learn
 			learn_mode_ = not learn_mode_
 			if learn_mode_:
-				global tor
+				global tor, ai
+				Clock.unschedule(self.update)
+				bgm.stop()
+				ai = False
 				tor = True
 				status = self.snake.get_map_status()
 				visible_area = self.snake.get_visible_area()
